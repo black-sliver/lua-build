@@ -22,15 +22,14 @@ jobs:
         with:
           arch: ${{env.ARCH}}
       - name: Build
-        shell: bash
         run: |
             curl -O https://www.lua.org/ftp/lua-5.2.4.tar.gz
 
             tar -xzf lua-5.2.4.tar.gz
 
             cd lua-5.2.4
-            mkdir build
-            mkdir include
+            md build
+            md include
             cp src/*.h include/
             cd src
 
