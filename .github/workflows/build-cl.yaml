@@ -45,6 +45,6 @@ jobs:
         with:
           name: lua
           path: |
-            build/*
-            include/*
+            lua-5.2.4/build/*
+            lua-5.2.4/include/*
           if-no-files-found: error
