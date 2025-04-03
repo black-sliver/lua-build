@@ -36,11 +36,11 @@ jobs:
 
             mv luac.c ..
 
-            cl /nologo /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG *.c /link user32.lib /OUT:../build/lua.exe
+            cl /nologo /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG *.c /link /out:../build/lua.exe
 
             mv lua.c ..
 
-            cl /nologo /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG /DLUA_BUILD_AS_DLL *.c /link /DLL /OUT:../build/lua52.dll
+            cl /nologo /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG /DLUA_BUILD_AS_DLL *.c /link /DLL /link /out:../build/lua52.dll
       - name: Store
         uses: actions/upload-artifact@v4
         with:
