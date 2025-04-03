@@ -1,0 +1,50 @@
+name: Build CL
+
+on:
+  workflow_dispatch:
+
+#!/bin/bash
+jobs:
+  build-x86:
+    env:
+      BUILD_PLATFORM: "x86"
+      BUILD_CONFIGURATION: Release
+      OPENSSL_BUILD_PLATFORM: VC-WIN32
+      ARCH: win32
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+
+    steps:
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{env.ARCH}}
+      - name: Build
+        shell: bash
+        run: |
+            wget https://www.lua.org/ftp/lua-5.2.4.tar.gz
+
+            tar -xzf lua-5.2.4.tar.gz
+
+            cd lua-5.2.4
+            mkdir build
+            mkdir include
+            cp src/*.h include/
+            cd src
+
+            mv luac.c ..
+
+            cl *.c /nologo /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG /link user32.lib /OUT:../build/lua.exe
+
+            mv lua.c ..
+
+            cl *.c /nologo /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG /DLUA_BUILD_AS_DLL /link /DLL /OUT:../build/lua52.dll
+      - name: Store
+        uses: actions/upload-artifact@v4
+        with:
+          name: lua
+          path: |
+            build
+            include
