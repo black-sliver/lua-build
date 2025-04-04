@@ -11,6 +11,13 @@ jobs:
       BUILD_CONFIGURATION: Release
       OPENSSL_BUILD_PLATFORM: VC-WIN32
       ARCH: win32
+      LUA52_VERSION: "5.2.4"
+      LUA52_NAME: "lua52"
+      LUA53_VERSION: "5.3.6"
+      LUA53_NAME: "lua53"
+      LUA54_VERSION: "5.4.7"
+      LUA54_NAME: "lua54"
+
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -21,13 +28,13 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: ${{env.ARCH}}
-      - name: Build
+      - name: Build Lua ${{env.LUA52_VERSION}}
         run: |
-            curl -O https://www.lua.org/ftp/lua-5.2.4.tar.gz
+            curl -O https://www.lua.org/ftp/lua-${{env.LUA52_VERSION}}.tar.gz
 
-            tar -xzf lua-5.2.4.tar.gz
+            tar -xzf lua-${{env.LUA52_VERSION}}.tar.gz
 
-            cd lua-5.2.4
+            cd lua-${{env.LUA52_VERSION}}
             md bin
             md lib
             md include
@@ -41,16 +48,82 @@ jobs:
             mv lua.c ..
             del lua.obj
 
-            cl /nologo /D_CRT_SECURE_NO_WARNINGS /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG /DLUA_BUILD_AS_DLL *.c /link /DLL /out:../bin/lua52.dll
+            cl /nologo /D_CRT_SECURE_NO_WARNINGS /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG /DLUA_BUILD_AS_DLL *.c /link /DLL /out:../bin/${{env.LUA52_NAME}}.dll
 
             dir *.obj
-            lib *.obj /out:../lib/lua52.lib
-      - name: Store
+            lib *.obj /out:../lib/${{env.LUA52_NAME}}.lib
+      - name: Store Lua ${{env.LUA52_VERSION}}
         uses: actions/upload-artifact@v4
         with:
-          name: lua
+          name: ${{env.LUA52_NAME}}-${{env.ARCH}}
           path: |
-            lua-5.2.4/bin/*
-            lua-5.2.4/lib/*
-            lua-5.2.4/include/*
+            lua-${{env.LUA52_VERSION}}/bin/*
+            lua-${{env.LUA52_VERSION}}/lib/*
+            lua-${{env.LUA52_VERSION}}/include/*
+          if-no-files-found: error
+      - name: Build Lua ${{env.LUA53_VERSION}}
+        run: |
+            curl -O https://www.lua.org/ftp/lua-${{env.LUA53_VERSION}}.tar.gz
+
+            tar -xzf lua-${{env.LUA53_VERSION}}.tar.gz
+
+            cd lua-${{env.LUA53_VERSION}}
+            md bin
+            md lib
+            md include
+            cp src/*.h include/
+            cd src
+
+            mv luac.c ..
+
+            cl /nologo /D_CRT_SECURE_NO_WARNINGS /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG *.c /link /out:../bin/lua.exe
+
+            mv lua.c ..
+            del lua.obj
+
+            cl /nologo /D_CRT_SECURE_NO_WARNINGS /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG /DLUA_BUILD_AS_DLL *.c /link /DLL /out:../bin/${{env.LUA52_NAME}}.dll
+
+            dir *.obj
+            lib *.obj /out:../lib/${{env.LUA53_NAME}}.lib
+      - name: Store Lua ${{env.LUA53_VERSION}}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{env.LUA53_NAME}}-${{env.ARCH}}
+          path: |
+            lua-${{env.LUA53_VERSION}}/bin/*
+            lua-${{env.LUA53_VERSION}}/lib/*
+            lua-${{env.LUA53_VERSION}}/include/*
+          if-no-files-found: error
+      - name: Build Lua ${{env.LUA54_VERSION}}
+        run: |
+            curl -O https://www.lua.org/ftp/lua-${{env.LUA54_VERSION}}.tar.gz
+
+            tar -xzf lua-${{env.LUA54_VERSION}}.tar.gz
+
+            cd lua-${{env.LUA54_VERSION}}
+            md bin
+            md lib
+            md include
+            cp src/*.h include/
+            cd src
+
+            mv luac.c ..
+
+            cl /nologo /D_CRT_SECURE_NO_WARNINGS /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG *.c /link /out:../bin/lua.exe
+
+            mv lua.c ..
+            del lua.obj
+
+            cl /nologo /D_CRT_SECURE_NO_WARNINGS /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG /DLUA_BUILD_AS_DLL *.c /link /DLL /out:../bin/${{env.LUA54_NAME}}.dll
+
+            dir *.obj
+            lib *.obj /out:../lib/${{env.LUA54_NAME}}.lib
+      - name: Store Lua ${{env.LUA54_VERSION}}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{env.LUA54_NAME}}-${{env.ARCH}}
+          path: |
+            lua-${{env.LUA54_VERSION}}/bin/*
+            lua-${{env.LUA54_VERSION}}/lib/*
+            lua-${{env.LUA54_VERSION}}/include/*
           if-no-files-found: error
