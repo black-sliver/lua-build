@@ -28,23 +28,29 @@ jobs:
             tar -xzf lua-5.2.4.tar.gz
 
             cd lua-5.2.4
-            md build
+            md bin
+            md lib
             md include
             cp src/*.h include/
             cd src
 
             mv luac.c ..
 
-            cl /nologo /D_CRT_SECURE_NO_WARNINGS /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG *.c /link /out:../build/lua.exe
+            cl /nologo /D_CRT_SECURE_NO_WARNINGS /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG *.c /link /out:../bin/lua.exe
 
             mv lua.c ..
+            del lua.obj
 
-            cl /nologo /D_CRT_SECURE_NO_WARNINGS /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG /DLUA_BUILD_AS_DLL *.c /link /DLL /link /out:../build/lua52.dll
+            cl /nologo /D_CRT_SECURE_NO_WARNINGS /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG /DLUA_BUILD_AS_DLL *.c /link /DLL /out:../bin/lua52.dll
+
+            dir *.obj
+            lib *.obj /out:../lib/lua52.lib
       - name: Store
         uses: actions/upload-artifact@v4
         with:
           name: lua
           path: |
-            lua-5.2.4/build/*
+            lua-5.2.4/bin/*
+            lua-5.2.4/lib/*
             lua-5.2.4/include/*
           if-no-files-found: error
