@@ -3,127 +3,75 @@ name: Build CL
 on:
   workflow_dispatch:
 
-#!/bin/bash
 jobs:
-  build-x86:
+  build:
     env:
-      BUILD_PLATFORM: "x86"
-      BUILD_CONFIGURATION: Release
-      OPENSSL_BUILD_PLATFORM: VC-WIN32
-      ARCH: win32
       LUA52_VERSION: "5.2.4"
-      LUA52_NAME: "lua52"
       LUA53_VERSION: "5.3.6"
-      LUA53_NAME: "lua53"
       LUA54_VERSION: "5.4.7"
-      LUA54_NAME: "lua54"
 
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        include:
-          - os: windows-latest
+        os:
+          - windows-latest
+        arch:
+          - win32
+          - win64
 
     steps:
+      - name: Checkout Code  # this is required to use action.yaml via relative path
+        uses: actions/checkout@v4
+
+      - name: Show Files
+        run: |
+          dir
+
       - uses: ilammy/msvc-dev-cmd@v1
         with:
-          arch: ${{env.ARCH}}
-      - name: Build Lua ${{env.LUA52_VERSION}}
-        run: |
-            curl -O https://www.lua.org/ftp/lua-${{env.LUA52_VERSION}}.tar.gz
+          arch: ${{ matrix.arch }}
 
-            tar -xzf lua-${{env.LUA52_VERSION}}.tar.gz
-
-            cd lua-${{env.LUA52_VERSION}}
-            md bin
-            md lib
-            md include
-            cp src/*.h include/
-            cd src
-
-            mv luac.c ..
-
-            cl /nologo /D_CRT_SECURE_NO_WARNINGS /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG *.c /link /out:../bin/lua.exe
-
-            mv lua.c ..
-            del lua.obj
-
-            cl /nologo /D_CRT_SECURE_NO_WARNINGS /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG /DLUA_BUILD_AS_DLL *.c /link /DLL /out:../bin/${{env.LUA52_NAME}}.dll
-
-            dir *.obj
-            lib *.obj /out:../lib/${{env.LUA52_NAME}}.lib
-      - name: Store Lua ${{env.LUA52_VERSION}}
+      - id: build52
+        uses: ./
+        with:
+          name: "lua52"
+          version: "${{ env.LUA52_VERSION }}"
+      - name: Store Lua ${{ env.LUA52_VERSION }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{env.LUA52_NAME}}-${{env.ARCH}}
+          name: lua52-${{ matrix.arch }}
           path: |
-            lua-${{env.LUA52_VERSION}}/bin/*
-            lua-${{env.LUA52_VERSION}}/lib/*
-            lua-${{env.LUA52_VERSION}}/include/*
+            ${{ steps.build52.outputs.path }}/bin/*
+            ${{ steps.build52.outputs.path }}/lib/*
+            ${{ steps.build52.outputs.path }}/include/*
           if-no-files-found: error
-      - name: Build Lua ${{env.LUA53_VERSION}}
-        run: |
-            curl -O https://www.lua.org/ftp/lua-${{env.LUA53_VERSION}}.tar.gz
 
-            tar -xzf lua-${{env.LUA53_VERSION}}.tar.gz
-
-            cd lua-${{env.LUA53_VERSION}}
-            md bin
-            md lib
-            md include
-            cp src/*.h include/
-            cd src
-
-            mv luac.c ..
-
-            cl /nologo /D_CRT_SECURE_NO_WARNINGS /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG *.c /link /out:../bin/lua.exe
-
-            mv lua.c ..
-            del lua.obj
-
-            cl /nologo /D_CRT_SECURE_NO_WARNINGS /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG /DLUA_BUILD_AS_DLL *.c /link /DLL /out:../bin/${{env.LUA52_NAME}}.dll
-
-            dir *.obj
-            lib *.obj /out:../lib/${{env.LUA53_NAME}}.lib
-      - name: Store Lua ${{env.LUA53_VERSION}}
+      - id: build53
+        uses: ./
+        with:
+          name: "lua53"
+          version: "${{ env.LUA53_VERSION }}"
+      - name: Store Lua ${{ env.LUA53_VERSION }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{env.LUA53_NAME}}-${{env.ARCH}}
+          name: lua53-${{ matrix.arch }}
           path: |
-            lua-${{env.LUA53_VERSION}}/bin/*
-            lua-${{env.LUA53_VERSION}}/lib/*
-            lua-${{env.LUA53_VERSION}}/include/*
+            ${{ steps.build53.outputs.path }}/bin/*
+            ${{ steps.build53.outputs.path }}/lib/*
+            ${{ steps.build53.outputs.path }}/include/*
           if-no-files-found: error
-      - name: Build Lua ${{env.LUA54_VERSION}}
-        run: |
-            curl -O https://www.lua.org/ftp/lua-${{env.LUA54_VERSION}}.tar.gz
 
-            tar -xzf lua-${{env.LUA54_VERSION}}.tar.gz
-
-            cd lua-${{env.LUA54_VERSION}}
-            md bin
-            md lib
-            md include
-            cp src/*.h include/
-            cd src
-
-            mv luac.c ..
-
-            cl /nologo /D_CRT_SECURE_NO_WARNINGS /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG *.c /link /out:../bin/lua.exe
-
-            mv lua.c ..
-            del lua.obj
-
-            cl /nologo /D_CRT_SECURE_NO_WARNINGS /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG /DLUA_BUILD_AS_DLL *.c /link /DLL /out:../bin/${{env.LUA54_NAME}}.dll
-
-            dir *.obj
-            lib *.obj /out:../lib/${{env.LUA54_NAME}}.lib
-      - name: Store Lua ${{env.LUA54_VERSION}}
+      - id: build54
+        uses: ./
+        with:
+          name: "lua54"
+          version: "${{ env.LUA54_VERSION }}"
+      - name: Store Lua ${{ env.LUA54_VERSION }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{env.LUA54_NAME}}-${{env.ARCH}}
+          name: lua54-${{ matrix.arch }}
           path: |
-            lua-${{env.LUA54_VERSION}}/bin/*
-            lua-${{env.LUA54_VERSION}}/lib/*
-            lua-${{env.LUA54_VERSION}}/include/*
+            ${{ steps.build54.outputs.path }}/bin/*
+            ${{ steps.build54.outputs.path }}/lib/*
+            ${{ steps.build54.outputs.path }}/include/*
           if-no-files-found: error
