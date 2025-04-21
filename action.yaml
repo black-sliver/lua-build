@@ -1,0 +1,47 @@
+name: Build One Lua CL
+description: Fetch and build a version of Lua with CL
+
+inputs:
+  name:  # e.g. "lua54"
+    description: Name of the resulting DLL/LIB, e.g. "lua54" for "lua54.dll".
+    required: true
+  version:  # e.g. "5.4.7"
+    description: Full version of Lua to download, e.g. "5.4.7".
+    required: true
+
+outputs:
+  path:
+    description: Output path that contains lib/, bin/, include/.
+    value: ${{ steps.build.outputs.path }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Fetch and Build Lua ${{ inputs.version }}
+      id: build
+      shell: pwsh
+      run: |
+          curl -O https://www.lua.org/ftp/lua-${{ inputs.version }}.tar.gz
+
+          tar -xzf lua-${{ inputs.version }}.tar.gz
+
+          cd lua-${{ inputs.version }}
+          md bin
+          md lib
+          md include
+          cp src/*.h include/
+          cd src
+
+          mv luac.c ..
+
+          cl /nologo /D_CRT_SECURE_NO_WARNINGS /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG *.c /link /out:../bin/lua.exe
+
+          mv lua.c ..
+          del lua.obj
+
+          cl /nologo /D_CRT_SECURE_NO_WARNINGS /W3 /sdl /O2 /Oi /Oy- /D _WINDLL /MD /GS /fp:precise /Zc:inline /DNDEBUG /DLUA_BUILD_AS_DLL *.c /link /DLL /out:../bin/${{ inputs.name }}.dll
+
+          dir *.obj
+          lib *.obj /out:../lib/${{ inputs.name }}.lib
+
+          echo "path=lua-${{ inputs.version }}" >> $env:GITHUB_OUTPUT
